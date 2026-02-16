@@ -2,1298 +2,244 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>نظام إدارة المطابخ - أحمد حمزة (متصل)</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Tajawal', sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 10px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        /* شاشة تسجيل الدخول */
-        .login-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .login-container {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .connection-status {
-            background: #28a745;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 50px;
-            font-size: 12px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-
-        .connection-status.offline {
-            background: #dc3545;
-        }
-
-        .login-container h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 1.8em;
-        }
-
-        .login-options {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .login-option {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .login-option.active {
-            border-color: #667eea;
-            background: #f0f4ff;
-        }
-
-        .login-option i { font-size: 24px; margin-bottom: 5px; }
-        .login-option.office i { color: #667eea; }
-        .login-option.factory i { color: #25d366; }
-
-        .password-input {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .password-input input {
-            width: 100%;
-            padding: 15px;
-            padding-left: 50px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-        }
-
-        .password-input i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
-        }
-
-        .btn-login {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .error-message {
-            color: #dc3545;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-
-        /* مؤشر الاتصال */
-        .online-status {
-            background: #f8f9fa;
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .status-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #28a745;
-            animation: pulse 2s infinite;
-        }
-
-        .status-dot.offline {
-            background: #dc3545;
-            animation: none;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(40,167,69,0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(40,167,69,0); }
-            100% { box-shadow: 0 0 0 0 rgba(40,167,69,0); }
-        }
-
-        .sync-status {
-            color: #666;
-            font-size: 14px;
-        }
-
-        /* رأس الصفحة */
-        .mode-indicator {
-            background: #2b2b2b;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-weight: 600;
-            position: relative;
-        }
-
-        .mode-indicator.office { background: #667eea; }
-        .mode-indicator.factory { background: #25d366; }
-
-        .logout-btn {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #2b2b2b 0%, #1a1a1a 100%);
-            color: white;
-            padding: 20px 15px;
-            text-align: center;
-        }
-
-        .btn-add {
-            background: #ffd700;
-            color: #333;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            width: 90%;
-            max-width: 300px;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        .notifications-bar {
-            background: #fff3cd;
-            color: #856404;
-            padding: 12px;
-            margin: 10px;
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-right: 5px solid #ffd700;
-        }
-
-        .notifications-count {
-            background: #dc3545;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 50px;
-            font-weight: 600;
-        }
-
-        .factory-tabs {
-            display: flex;
-            gap: 5px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 15px;
-            margin: 10px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            background: white;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .tab-btn.active {
-            background: #667eea;
-            color: white;
-        }
-
-        .search-section {
-            background: #f8f9fa;
-            padding: 15px;
-            margin: 10px;
-            border-radius: 15px;
-        }
-
-        .search-box {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .search-box input {
-            flex: 1;
-            min-width: 200px;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-        }
-
-        .btn-search {
-            background: #2b2b2b;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .projects-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            padding: 10px;
-            margin: 10px;
-        }
-
-        @media (min-width: 600px) {
-            .projects-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        .project-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border: 1px solid #e0e0e0;
-        }
-
-        .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .status-planning { background: #fff3cd; color: #856404; }
-        .status-execution { background: #cce5ff; color: #004085; }
-        .status-completed { background: #d4edda; color: #155724; }
-        .status-delivered { background: #d1c4e9; color: #4a148c; }
-
-        .card-body {
-            padding: 12px;
-        }
-
-        .info-row {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 8px;
-            border-bottom: 1px dashed #e0e0e0;
-            padding-bottom: 5px;
-        }
-
-        .info-label {
-            font-weight: 600;
-            color: #666;
-            font-size: 0.85em;
-        }
-
-        .info-value {
-            color: #333;
-            word-break: break-word;
-            padding-right: 5px;
-        }
-
-        .factory-info {
-            background: #e8f5e9;
-            padding: 8px;
-            border-radius: 8px;
-            margin: 8px 0;
-            border-right: 3px solid #25d366;
-        }
-
-        .card-footer {
-            background: #f8f9fa;
-            padding: 12px;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
-
-        .action-btn {
-            border: none;
-            padding: 8px 5px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            flex: 1;
-        }
-
-        .btn-edit { background: #17a2b8; color: white; }
-        .btn-whatsapp { background: #25d366; color: white; }
-        .btn-delete { background: #dc3545; color: white; }
-        .btn-receive { background: #ffd700; color: #333; }
-        .btn-start { background: #28a745; color: white; }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-            overflow-y: auto;
-            padding: 10px;
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 20px auto;
-            padding: 20px;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #ffd700;
-        }
-
-        .close {
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .form-group {
-            margin-bottom: 12px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 3px;
-            color: #555;
-            font-weight: 600;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-        }
-
-        .phone-input-group {
-            display: flex;
-            align-items: center;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .phone-prefix {
-            background: #f0f0f0;
-            padding: 10px;
-            font-weight: 600;
-            border-left: 2px solid #e0e0e0;
-        }
-
-        .phone-input-group input {
-            border: none;
-            border-radius: 0;
-            flex: 1;
-        }
-
-        .footer {
-            background: #f8f9fa;
-            padding: 15px;
-            text-align: center;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        /* شاشة الإعدادات الأولية */
-        .setup-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .setup-container {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-        }
-
-        .setup-container h2 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        .setup-container p {
-            color: #666;
-            margin-bottom: 30px;
-            line-height: 1.6;
-        }
-
-        .setup-steps {
-            text-align: right;
-            margin: 20px 0;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-
-        .setup-steps ol {
-            padding-right: 20px;
-        }
-
-        .setup-steps li {
-            margin-bottom: 10px;
-            color: #555;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            margin: 5px;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .firebase-config {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            text-align: left;
-            direction: ltr;
-        }
-
-        .firebase-config textarea {
-            width: 100%;
-            height: 150px;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 12px;
-            margin: 10px 0;
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>مطابخ أحمد - نظام المزامنة V11</title>
     
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #667eea; --urgent: #e11d48; --bg: #f8fafc; --text: #1e293b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+        
+        .app-container { display: flex; flex-direction: column; height: 100vh; max-width: 600px; margin: 0 auto; background: white; }
+        
+        /* شاشة الدخول */
+        .login-screen { padding: 40px 20px; text-align: center; }
+        .login-card { border: 2px solid #e2e8f0; padding: 20px; border-radius: 20px; margin-bottom: 20px; cursor: pointer; transition: 0.3s; }
+        .login-card.active { border-color: var(--primary); background: #f0f4ff; }
+        .btn-login { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; }
+
+        /* الرأس والقائمة */
+        header { background: #2d3748; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .stats-bar { display: flex; gap: 10px; padding: 10px; background: #edf2f7; overflow-x: auto; white-space: nowrap; }
+        .stat-item { background: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; border: 1px solid #e2e8f0; }
+
+        .main-content { flex: 1; overflow-y: auto; padding: 10px; background: #f1f5f9; }
+        
+        /* كارت الطلب */
+        .order-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-right: 5px solid #cbd5e1; position: relative; }
+        .order-card.urgent { border-right-color: var(--urgent); }
+        .order-card.completed { opacity: 0.6; background: #f8fafc; }
+        .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .area-tag { background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .order-time { font-size: 11px; color: #64748b; }
+
+        /* الأزرار */
+        .actions { display: flex; gap: 8px; margin-top: 15px; }
+        .btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; }
+        .btn-done { background: #10b981; color: white; }
+        .btn-process { background: #3b82f6; color: white; }
+        .btn-del { background: #fee2e2; color: #ef4444; flex: 0 0 40px; }
+
+        /* نافذة الإضافة */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+        .modal-content { background: white; width: 100%; border-radius: 20px; padding: 20px; max-height: 90vh; overflow-y: auto; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
+        
+        .floating-add { position: fixed; bottom: 20px; left: 20px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); border: none; }
+    </style>
 </head>
 <body>
-    <!-- شاشة الإعدادات الأولية (تظهر مرة واحدة) -->
-    <div id="setupScreen" class="setup-screen" style="display: none;">
-        <div class="setup-container">
-            <h2><i class="fas fa-fire"></i> إعداد Firebase</h2>
-            <p>لربط المكتب بالمعمل عبر الإنترنت، نحتاج إلى ربط التطبيق بـ Firebase</p>
-            
-            <div class="setup-steps">
-                <h3>خطوات الإعداد:</h3>
-                <ol>
-                    <li>اذهب إلى <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a></li>
-                    <li>أنشئ مشروع جديد</li>
-                    <li>اضغط على "إضافة تطبيق" واختر Web</li>
-                    <li>انسخ إعدادات Firebase</li>
-                </ol>
-            </div>
 
-            <div class="firebase-config">
-                <label>الصق إعدادات Firebase هنا:</label>
-                <textarea id="firebaseConfig" placeholder='{
-  "apiKey": "your-api-key",
-  "authDomain": "your-auth-domain",
-  "projectId": "your-project-id",
-  "storageBucket": "your-storage-bucket",
-  "messagingSenderId": "your-sender-id",
-  "appId": "your-app-id"
-}'></textarea>
-            </div>
-
-            <button class="btn-primary" onclick="saveFirebaseConfig()">
-                <i class="fas fa-save"></i> حفظ الإعدادات والمتابعة
-            </button>
-            <p style="margin-top: 15px; font-size: 12px; color: #999;">
-                سيتم حفظ الإعدادات في جهازك فقط
-            </p>
-        </div>
+<div id="app" class="app-container">
     </div>
 
-    <!-- شاشة تسجيل الدخول -->
-    <div id="loginScreen" class="login-screen" style="display: none;">
-        <div class="login-container">
-            <div id="connectionStatus" class="connection-status online">
-                <i class="fas fa-wifi"></i> متصل بالسحابة
+<script>
+    // 1. إعدادات Firebase (تأكد من مطابقتها لمشروعك)
+    const firebaseConfig = {
+        apiKey: "AIzaSyCZfnlCBqBuxao3OTIZAK3E4-J2bAiQWHY",
+        authDomain: "ahmad992.firebaseapp.com",
+        projectId: "ahmad992",
+        storageBucket: "ahmad992.firebasestorage.app",
+        messagingSenderId: "349563855282",
+        appId: "1:349563855282:web:87479b610f66afd31504ab"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    let currentUser = null;
+    let regions = ["المنصور", "الكرادة", "الدورة", "زيونة", "حي الجامعة"];
+
+    // 2. شاشة الدخول
+    function showLogin() {
+        document.getElementById('app').innerHTML = `
+            <div class="login-screen">
+                <h2 style="margin-bottom:30px;">🍳 نظام مطابخ أحمد</h2>
+                <div class="login-card active" id="card-office" onclick="selectRole('office')">
+                    <i class="fas fa-briefcase fa-2x" style="color:#667eea"></i>
+                    <h3>إدارة المكتب</h3>
+                </div>
+                <div class="login-card" id="card-factory" onclick="selectRole('factory')">
+                    <i class="fas fa-industry fa-2x" style="color:#10b981"></i>
+                    <h3>قسم المعمل</h3>
+                </div>
+                <input type="password" id="pass" placeholder="كلمة المرور" style="text-align:center;">
+                <button class="btn-login" onclick="attemptLogin()">دخول للنظام</button>
             </div>
+        `;
+    }
+
+    window.selectRole = (role) => {
+        document.querySelectorAll('.login-card').forEach(c => c.classList.remove('active'));
+        document.getElementById(`card-${role}`).classList.add('active');
+    };
+
+    window.attemptLogin = () => {
+        const role = document.getElementById('card-office').classList.contains('active') ? 'office' : 'factory';
+        const pass = document.getElementById('pass').value;
+        const correctPass = (role === 'office') ? '1234' : '5678';
+
+        if(pass === correctPass) {
+            currentUser = role;
+            showMain();
+            startSync(); // بدء المزامنة اللحظية فور الدخول
+        } else {
+            alert("كلمة المرور خاطئة!");
+        }
+    };
+
+    // 3. شاشة العرض الرئيسية
+    function showMain() {
+        document.getElementById('app').innerHTML = `
+            <header>
+                <span>${currentUser === 'office' ? '🏢 المكتب' : '🏭 المعمل'}</span>
+                <button onclick="location.reload()" style="background:none; border:1px solid white; color:white; padding:4px 10px; border-radius:5px;">خروج</button>
+            </header>
+            <div class="stats-bar">
+                <div class="stat-item">📦 طلبات: <span id="s-all">0</span></div>
+                <div class="stat-item" style="color:#3b82f6;">⏳ قيد التنفيذ: <span id="s-proc">0</span></div>
+                <div class="stat-item" style="color:#10b981;">✅ مكتمل: <span id="s-done">0</span></div>
+            </div>
+            <div class="main-content" id="orders-list">
+                <div style="text-align:center; margin-top:50px; color:#94a3b8;">جاري جلب البيانات...</div>
+            </div>
+            ${currentUser === 'office' ? '<button class="floating-add" onclick="openModal()">➕</button>' : ''}
             
-            <h1><i class="fas fa-kitchen-set"></i> مطابخ أحمد حمزة</h1>
-            <p>نظام إدارة المشاريع السحابي</p>
-            
-            <div class="login-options">
-                <div class="login-option office active" onclick="selectLoginType('office')">
-                    <i class="fas fa-briefcase"></i>
-                    <span>مكتب أحمد</span>
-                </div>
-                <div class="login-option factory" onclick="selectLoginType('factory')">
-                    <i class="fas fa-industry"></i>
-                    <span>المعمل</span>
-                </div>
-            </div>
-
-            <div class="password-input">
-                <i class="fas fa-lock"></i>
-                <input type="password" id="passwordInput" placeholder="أدخل كلمة المرور">
-            </div>
-
-            <button class="btn-login" onclick="login()">
-                <i class="fas fa-sign-in-alt"></i> دخول
-            </button>
-
-            <div id="loginError" class="error-message"></div>
-        </div>
-    </div>
-
-    <!-- الصفحة الرئيسية -->
-    <div id="mainApp" style="display: none;">
-        <div class="container">
-            <!-- شريط الاتصال -->
-            <div class="online-status">
-                <div class="status-badge">
-                    <div id="statusDot" class="status-dot online"></div>
-                    <span id="statusText">متصل بالسحابة</span>
-                </div>
-                <div class="sync-status" id="syncStatus">
-                    <i class="fas fa-sync-alt fa-spin"></i> جاري المزامنة...
-                </div>
-            </div>
-
-            <!-- مؤشر الوضع -->
-            <div id="modeIndicator" class="mode-indicator office">
-                <i class="fas fa-briefcase"></i> وضع مكتب أحمد حمزة
-                <button class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> خروج
-                </button>
-            </div>
-
-            <!-- رأس الصفحة -->
-            <div class="header">
-                <h1 id="pageTitle"><i class="fas fa-kitchen-set"></i> مكتب أحمد حمزة</h1>
-                <p id="pageSubtitle">إدارة مشاريع المطابخ التركية - متصل بالسحابة</p>
-                
-                <!-- زر الإضافة (للمكتب فقط) -->
-                <div id="addButtonContainer">
-                    <button class="btn-add" onclick="openAddModal()">
-                        <i class="fas fa-plus-circle"></i> إضافة طلب جديد
-                    </button>
-                </div>
-
-                <!-- إشعارات المعمل -->
-                <div id="notificationsBar" class="notifications-bar" style="display: none;">
-                    <i class="fas fa-bell"></i>
-                    <span>لديك <span id="newOrdersCount" class="notifications-count">0</span> طلبات جديدة</span>
-                    <button class="btn-refresh" onclick="checkNewOrders()">
-                        <i class="fas fa-sync-alt"></i> تحديث
-                    </button>
-                </div>
-            </div>
-
-            <!-- تبويبات المعمل -->
-            <div id="factoryTabs" class="factory-tabs" style="display: none;">
-                <button class="tab-btn active" onclick="filterFactoryOrders('new')">جديدة</button>
-                <button class="tab-btn" onclick="filterFactoryOrders('inProgress')">قيد التنفيذ</button>
-                <button class="tab-btn" onclick="filterFactoryOrders('completed')">منتهية</button>
-            </div>
-
-            <!-- قسم البحث -->
-            <div class="search-section">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="🔍 بحث عن زبون...">
-                    <button class="btn-search" onclick="searchCustomer()"><i class="fas fa-search"></i> بحث</button>
-                    <button class="btn-search" onclick="clearSearch()"><i class="fas fa-times"></i> مسح</button>
-                </div>
-            </div>
-
-            <!-- نتائج البحث -->
-            <div id="searchResults" style="display: none; padding: 0 10px;">
-                <h3>نتائج البحث:</h3>
-                <div id="searchResultsContent" class="projects-container"></div>
-            </div>
-
-            <!-- بطاقات المشاريع -->
-            <div id="projectsContainer" class="projects-container"></div>
-
-            <!-- الفوتر -->
-            <div class="footer">
-                <p>نظام إدارة سحابي - يتم التحديث تلقائياً</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- مودال إضافة/تعديل مشروع -->
-    <div id="projectModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle"><i class="fas fa-plus-circle"></i> إضافة طلب جديد</h2>
-                <span class="close" onclick="closeModal()">&times;</span>
-            </div>
-            <form id="projectForm">
-                <input type="hidden" id="editIndex" value="-1">
-                <input type="hidden" id="editId" value="">
-                
-                <div class="form-group">
-                    <label><i class="fas fa-user"></i> اسم الزبون</label>
-                    <input type="text" id="customerName" required>
-                </div>
-
-                <div class="form-group">
-                    <label><i class="fas fa-phone"></i> رقم الزبون</label>
-                    <div class="phone-input-group">
-                        <span class="phone-prefix">+964</span>
-                        <input type="tel" id="customerPhone" required>
+            <div id="m-add" class="modal">
+                <div class="modal-content">
+                    <h3 style="margin-bottom:15px; color:var(--primary);">إضافة طلب قياس</h3>
+                    <select id="f-region">${regions.map(r => `<option>${r}</option>`).join('')}</select>
+                    <input type="text" id="f-name" placeholder="اسم الزبون">
+                    <input type="number" id="f-price" placeholder="المبلغ الكلي">
+                    <textarea id="f-details" placeholder="القياسات والتفاصيل..."></textarea>
+                    <div style="display:flex; align-items:center; gap:10px; margin:10px 0;">
+                        <input type="checkbox" id="f-urgent" style="width:20px;"> <label style="color:red; font-weight:bold;">طلب عاجل 🔴</label>
                     </div>
+                    <button class="btn-login" onclick="saveOrder()">حفظ وإرسال للمعمل</button>
+                    <button onclick="closeModal()" style="width:100%; background:none; border:none; margin-top:10px; color:#64748b;">إلغاء</button>
                 </div>
+            </div>
+        `;
+    }
 
-                <div class="form-group">
-                    <label><i class="fas fa-ruler"></i> القياسات</label>
-                    <textarea id="measurements" rows="2"></textarea>
-                </div>
+    // 4. نظام المزامنة اللحظية (القلب النابض للنظام)
+    function startSync() {
+        // onSnapshot تضمن أن أي تغيير في قاعدة البيانات يظهر فوراً على جميع الأجهزة
+        db.collection('orders').orderBy('createdAt', 'desc')
+        .onSnapshot(snapshot => {
+            const list = document.getElementById('orders-list');
+            list.innerHTML = '';
+            let stats = { all:0, proc:0, done:0 };
 
-                <div class="form-group">
-                    <label><i class="fas fa-palette"></i> لون المطبخ والنقشة</label>
-                    <input type="text" id="color">
-                </div>
+            snapshot.forEach(doc => {
+                const o = doc.data();
+                const id = doc.id;
+                stats.all++;
+                if(o.status === 'done') stats.done++;
+                if(o.status === 'processing') stats.proc++;
 
-                <div class="form-group">
-                    <label><i class="fas fa-door-open"></i> نوع قبضات الباب</label>
-                    <input type="text" id="handles">
-                </div>
+                const card = document.createElement('div');
+                card.className = `order-card ${o.urgent ? 'urgent' : ''} ${o.status === 'done' ? 'completed' : ''}`;
+                
+                let actionBtn = '';
+                if(currentUser === 'factory') {
+                    if(o.status === 'pending') actionBtn = `<button class="btn btn-process" onclick="updateStatus('${id}', 'processing')">استلام المخطط</button>`;
+                    else if(o.status === 'processing') actionBtn = `<button class="btn btn-done" onclick="updateStatus('${id}', 'done')">تم الإكمال ✅</button>`;
+                }
 
-                <div class="form-group">
-                    <label><i class="fas fa-industry"></i> رقم المعمل</label>
-                    <div class="phone-input-group">
-                        <span class="phone-prefix">+964</span>
-                        <input type="tel" id="factoryNumber" value="7700000000">
+                card.innerHTML = `
+                    <div class="order-header">
+                        <span class="area-tag">${o.region}</span>
+                        <span class="order-time">${o.time || ''}</span>
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label><i class="fas fa-clipboard-list"></i> ملاحظات</label>
-                    <textarea id="notes" rows="2"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label><i class="fas fa-chart-line"></i> الحالة</label>
-                    <select id="status">
-                        <option value="في الانتظار">في الانتظار</option>
-                        <option value="في التنفيذ">في التنفيذ</option>
-                        <option value="مكتمل">مكتمل</option>
-                        <option value="تم التسليم">تم التسليم</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn-login">حفظ</button>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        // ==================== تهيئة Firebase ====================
-        let db;
-        let firebaseInitialized = false;
-        let currentUser = null;
-        let projects = [];
-        let unsubscribe = null;
-        let lastCheckTime = localStorage.getItem('lastCheckTime') || Date.now();
-        let officePassword = localStorage.getItem('officePassword') || '1234';
-        let factoryPassword = localStorage.getItem('factoryPassword') || '5678';
-
-        // التحقق من وجود إعدادات Firebase
-        function checkFirebaseConfig() {
-            const config = localStorage.getItem('firebaseConfig');
-            if (config) {
-                try {
-                    const firebaseConfig = JSON.parse(config);
-                    initializeFirebase(firebaseConfig);
-                    document.getElementById('setupScreen').style.display = 'none';
-                    document.getElementById('loginScreen').style.display = 'flex';
-                } catch (e) {
-                    showSetup();
-                }
-            } else {
-                showSetup();
-            }
-        }
-
-        function showSetup() {
-            document.getElementById('setupScreen').style.display = 'flex';
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'none';
-        }
-
-        function saveFirebaseConfig() {
-            const configText = document.getElementById('firebaseConfig').value;
-            try {
-                const config = JSON.parse(configText);
-                localStorage.setItem('firebaseConfig', configText);
-                initializeFirebase(config);
-                document.getElementById('setupScreen').style.display = 'none';
-                document.getElementById('loginScreen').style.display = 'flex';
-            } catch (e) {
-                alert('خطأ في تنسيق JSON. تأكد من النسخ بشكل صحيح');
-            }
-        }
-
-        function initializeFirebase(config) {
-            try {
-                firebase.initializeApp(config);
-                db = firebase.firestore();
-                
-                // استخدام المزامنة في الوقت الفعلي
-                db.settings({ 
-                    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
-                    experimentalForceLongPolling: true 
-                });
-                
-                firebaseInitialized = true;
-                updateConnectionStatus(true);
-                
-                // بدء الاستماع للتغييرات
-                listenToProjects();
-            } catch (e) {
-                console.error('Firebase initialization error:', e);
-                updateConnectionStatus(false);
-            }
-        }
-
-        function updateConnectionStatus(online) {
-            const statusDot = document.getElementById('statusDot');
-            const statusText = document.getElementById('statusText');
-            const connectionStatus = document.getElementById('connectionStatus');
-            
-            if (online) {
-                statusDot.className = 'status-dot online';
-                statusText.textContent = 'متصل بالسحابة';
-                if (connectionStatus) {
-                    connectionStatus.className = 'connection-status online';
-                    connectionStatus.innerHTML = '<i class="fas fa-wifi"></i> متصل بالسحابة';
-                }
-            } else {
-                statusDot.className = 'status-dot offline';
-                statusText.textContent = 'غير متصل - يعمل محلياً';
-                if (connectionStatus) {
-                    connectionStatus.className = 'connection-status offline';
-                    connectionStatus.innerHTML = '<i class="fas fa-wifi-slash"></i> غير متصل';
-                }
-            }
-        }
-
-        // الاستماع للتغييرات في Firestore
-        function listenToProjects() {
-            if (!firebaseInitialized) return;
-            
-            document.getElementById('syncStatus').style.display = 'block';
-            
-            if (unsubscribe) {
-                unsubscribe();
-            }
-            
-            unsubscribe = db.collection('projects')
-                .orderBy('timestamp', 'desc')
-                .onSnapshot((snapshot) => {
-                    projects = [];
-                    snapshot.forEach((doc) => {
-                        projects.push({
-                            id: doc.id,
-                            ...doc.data()
-                        });
-                    });
-                    
-                    displayProjects();
-                    updateConnectionStatus(true);
-                    document.getElementById('syncStatus').style.display = 'none';
-                    
-                    // تحديث الإشعارات للمعمل
-                    if (currentUser === 'factory') {
-                        checkNewOrders();
-                    }
-                }, (error) => {
-                    console.error('Firestore error:', error);
-                    updateConnectionStatus(false);
-                    document.getElementById('syncStatus').style.display = 'none';
-                    
-                    // محاولة إعادة الاتصال
-                    setTimeout(() => {
-                        if (firebaseInitialized) {
-                            listenToProjects();
-                        }
-                    }, 5000);
-                });
-        }
-
-        // ==================== تسجيل الدخول ====================
-        function selectLoginType(type) {
-            document.querySelectorAll('.login-option').forEach(opt => opt.classList.remove('active'));
-            document.querySelector(`.login-option.${type}`).classList.add('active');
-        }
-
-        function login() {
-            const selectedOption = document.querySelector('.login-option.active');
-            const type = selectedOption.classList.contains('office') ? 'office' : 'factory';
-            const password = document.getElementById('passwordInput').value;
-
-            let correctPassword = type === 'office' ? officePassword : factoryPassword;
-
-            if (password === correctPassword) {
-                currentUser = type;
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-                
-                updateUIForUser(type);
-                document.getElementById('passwordInput').value = '';
-                document.getElementById('loginError').innerHTML = '';
-                
-                // تحميل المشاريع
-                if (firebaseInitialized) {
-                    listenToProjects();
-                }
-            } else {
-                document.getElementById('loginError').innerHTML = '❌ كلمة المرور غير صحيحة';
-            }
-        }
-
-        function logout() {
-            currentUser = null;
-            if (unsubscribe) {
-                unsubscribe();
-            }
-            document.getElementById('mainApp').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'flex';
-        }
-
-        function updateUIForUser(user) {
-            const indicator = document.getElementById('modeIndicator');
-            const pageTitle = document.getElementById('pageTitle');
-            const pageSubtitle = document.getElementById('pageSubtitle');
-            const addButton = document.getElementById('addButtonContainer');
-            const notificationsBar = document.getElementById('notificationsBar');
-            const factoryTabs = document.getElementById('factoryTabs');
-
-            if (user === 'office') {
-                indicator.className = 'mode-indicator office';
-                indicator.innerHTML = '<i class="fas fa-briefcase"></i> وضع مكتب أحمد حمزة <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> خروج</button>';
-                pageTitle.innerHTML = '<i class="fas fa-kitchen-set"></i> مكتب أحمد حمزة';
-                pageSubtitle.innerHTML = 'إدارة مشاريع المطابخ - متصل بالسحابة';
-                addButton.style.display = 'block';
-                notificationsBar.style.display = 'none';
-                factoryTabs.style.display = 'none';
-            } else {
-                indicator.className = 'mode-indicator factory';
-                indicator.innerHTML = '<i class="fas fa-industry"></i> وضع المعمل <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> خروج</button>';
-                pageTitle.innerHTML = '<i class="fas fa-industry"></i> معمل المطابخ';
-                pageSubtitle.innerHTML = 'استلام وتنفيذ الطلبات - متصل بالسحابة';
-                addButton.style.display = 'none';
-                notificationsBar.style.display = 'flex';
-                factoryTabs.style.display = 'flex';
-            }
-        }
-
-        // ==================== إدارة المشاريع ====================
-        
-        // التحقق من الطلبات الجديدة
-        function checkNewOrders() {
-            const now = Date.now();
-            const newOrders = projects.filter(p => 
-                p.timestamp > lastCheckTime && p.status === 'في الانتظار'
-            );
-            
-            document.getElementById('newOrdersCount').textContent = newOrders.length;
-            
-            if (newOrders.length > 0) {
-                lastCheckTime = now;
-                localStorage.setItem('lastCheckTime', lastCheckTime);
-            }
-        }
-
-        // تصفية الطلبات للمعمل
-        function filterFactoryOrders(filter) {
-            let filtered = [];
-            switch(filter) {
-                case 'new':
-                    filtered = projects.filter(p => p.status === 'في الانتظار');
-                    break;
-                case 'inProgress':
-                    filtered = projects.filter(p => p.status === 'في التنفيذ');
-                    break;
-                case 'completed':
-                    filtered = projects.filter(p => ['مكتمل', 'تم التسليم'].includes(p.status));
-                    break;
-            }
-            
-            displayProjects(filtered);
-            
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-        }
-
-        // عرض المشاريع
-        function displayProjects(projectsToShow = projects) {
-            const container = document.getElementById('projectsContainer');
-            container.innerHTML = '';
-
-            if (!currentUser) return;
-
-            if (projectsToShow.length === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 30px;">لا توجد مشاريع</div>';
-                return;
-            }
-
-            projectsToShow.forEach((project) => {
-                const isNew = currentUser === 'factory' && 
-                             project.timestamp > lastCheckTime && 
-                             project.status === 'في الانتظار';
-
-                const card = createProjectCard(project, isNew);
-                container.appendChild(card);
-            });
-        }
-
-        // إنشاء بطاقة مشروع
-        function createProjectCard(project, isNew) {
-            const card = document.createElement('div');
-            card.className = 'project-card';
-            
-            let statusClass = '';
-            switch(project.status) {
-                case 'في التنفيذ': statusClass = 'status-execution'; break;
-                case 'مكتمل': statusClass = 'status-completed'; break;
-                case 'تم التسليم': statusClass = 'status-delivered'; break;
-                default: statusClass = 'status-planning';
-            }
-
-            let actions = '';
-            if (currentUser === 'office') {
-                actions = `
-                    <button class="action-btn btn-edit" onclick="openEditModal('${project.id}')"><i class="fas fa-edit"></i> تعديل</button>
-                    <button class="action-btn btn-whatsapp" onclick="sendToFactory('${project.id}')"><i class="fab fa-whatsapp"></i> إرسال</button>
-                    <button class="action-btn btn-delete" onclick="deleteProject('${project.id}')"><i class="fas fa-trash"></i> حذف</button>
+                    <div style="font-weight:bold; font-size:16px;">${o.customerName}</div>
+                    <div style="font-size:13px; color:#475569; margin:5px 0;">${o.details}</div>
+                    <div style="color:#059669; font-weight:bold;">${parseInt(o.price).toLocaleString()} د.ع</div>
+                    <div class="actions">
+                        ${actionBtn}
+                        ${currentUser === 'office' ? `<button class="btn btn-del" onclick="deleteOrder('${id}')"><i class="fas fa-trash"></i></button>` : ''}
+                    </div>
                 `;
-            } else {
-                if (project.status === 'في الانتظار') {
-                    actions = `<button class="action-btn btn-receive" onclick="updateStatus('${project.id}', 'في التنفيذ')"><i class="fas fa-hand-holding-heart"></i> استلام الطلب</button>`;
-                } else if (project.status === 'في التنفيذ') {
-                    actions = `<button class="action-btn btn-start" onclick="updateStatus('${project.id}', 'مكتمل')"><i class="fas fa-check-circle"></i> اكتمل التنفيذ</button>`;
-                }
-            }
+                list.appendChild(card);
+            });
 
-            card.innerHTML = `
-                ${isNew ? '<div style="background: #dc3545; color: white; padding: 5px; text-align: center;">🆕 طلب جديد</div>' : ''}
-                <div class="card-header">
-                    <h3>${project.customerName}</h3>
-                    <span class="status-badge ${statusClass}">${project.status}</span>
-                </div>
-                <div class="card-body">
-                    <div class="info-row">
-                        <span class="info-label">📞 الهاتف:</span>
-                        <span class="info-value">+964 ${project.customerPhone}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">📏 القياسات:</span>
-                        <span class="info-value">${project.measurements || 'غير محدد'}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">🎨 اللون/النقشة:</span>
-                        <span class="info-value">${project.color || 'غير محدد'}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">🚪 قبضات الباب:</span>
-                        <span class="info-value">${project.handles || 'غير محدد'}</span>
-                    </div>
-                    ${project.notes ? `
-                    <div class="info-row">
-                        <span class="info-label">📝 ملاحظات:</span>
-                        <span class="info-value">${project.notes}</span>
-                    </div>
-                    ` : ''}
-                    <div class="factory-info">
-                        <i class="fab fa-whatsapp"></i>
-                        <span>رقم المعمل: +964 ${project.factoryNumber}</span>
-                    </div>
-                </div>
-                <div class="card-footer">
-                    ${actions}
-                </div>
-            `;
-            
-            return card;
-        }
-
-        // فتح مودال الإضافة
-        function openAddModal() {
-            if (currentUser !== 'office') {
-                alert('هذه الصلاحية للمكتب فقط');
-                return;
-            }
-            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus-circle"></i> إضافة طلب جديد';
-            document.getElementById('projectForm').reset();
-            document.getElementById('editIndex').value = '-1';
-            document.getElementById('editId').value = '';
-            document.getElementById('projectModal').style.display = 'block';
-        }
-
-        // فتح مودال التعديل
-        function openEditModal(id) {
-            if (currentUser !== 'office') {
-                alert('هذه الصلاحية للمكتب فقط');
-                return;
-            }
-            
-            const project = projects.find(p => p.id === id);
-            if (!project) return;
-            
-            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> تعديل الطلب';
-            document.getElementById('editIndex').value = '1';
-            document.getElementById('editId').value = id;
-            document.getElementById('customerName').value = project.customerName;
-            document.getElementById('customerPhone').value = project.customerPhone;
-            document.getElementById('measurements').value = project.measurements || '';
-            document.getElementById('color').value = project.color || '';
-            document.getElementById('handles').value = project.handles || '';
-            document.getElementById('factoryNumber').value = project.factoryNumber;
-            document.getElementById('notes').value = project.notes || '';
-            document.getElementById('status').value = project.status;
-            document.getElementById('projectModal').style.display = 'block';
-        }
-
-        function closeModal() {
-            document.getElementById('projectModal').style.display = 'none';
-        }
-
-        // حفظ المشروع (إضافة أو تعديل)
-        document.getElementById('projectForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            if (!firebaseInitialized) {
-                alert('لا يوجد اتصال بالسحابة');
-                return;
-            }
-
-            const editId = document.getElementById('editId').value;
-            
-            const projectData = {
-                customerName: document.getElementById('customerName').value,
-                customerPhone: document.getElementById('customerPhone').value.replace(/\D/g, ''),
-                measurements: document.getElementById('measurements').value,
-                color: document.getElementById('color').value,
-                handles: document.getElementById('handles').value,
-                factoryNumber: document.getElementById('factoryNumber').value.replace(/\D/g, ''),
-                notes: document.getElementById('notes').value,
-                status: document.getElementById('status').value,
-                timestamp: Date.now()
-            };
-
-            try {
-                if (editId) {
-                    // تعديل مشروع موجود
-                    await db.collection('projects').doc(editId).update(projectData);
-                    alert('تم تعديل الطلب بنجاح');
-                } else {
-                    // إضافة مشروع جديد
-                    await db.collection('projects').add(projectData);
-                    alert('تم إضافة الطلب بنجاح وتم إرساله للمعمل');
-                }
-                
-                closeModal();
-            } catch (error) {
-                console.error('Error saving project:', error);
-                alert('حدث خطأ في الحفظ');
-            }
+            document.getElementById('s-all').innerText = stats.all;
+            document.getElementById('s-proc').innerText = stats.proc;
+            document.getElementById('s-done').innerText = stats.done;
+        }, err => {
+            console.error("خطأ في المزامنة:", err);
+            alert("فشل الاتصال اللحظي، تأكد من الإنترنت");
         });
+    }
 
-        // تحديث الحالة
-        async function updateStatus(id, newStatus) {
-            if (!firebaseInitialized) return;
-            
-            try {
-                await db.collection('projects').doc(id).update({
-                    status: newStatus,
-                    timestamp: Date.now()
-                });
-                alert(`تم تحديث الحالة إلى: ${newStatus}`);
-            } catch (error) {
-                console.error('Error updating status:', error);
-                alert('حدث خطأ في التحديث');
-            }
+    // 5. العمليات (إضافة، تحديث، حذف)
+    window.openModal = () => document.getElementById('m-add').style.display = 'flex';
+    window.closeModal = () => document.getElementById('m-add').style.display = 'none';
+
+    window.saveOrder = async () => {
+        const name = document.getElementById('f-name').value;
+        const region = document.getElementById('f-region').value;
+        const price = document.getElementById('f-price').value;
+        const details = document.getElementById('f-details').value;
+        const urgent = document.getElementById('f-urgent').checked;
+
+        if(!name || !price) return alert("يرجى ملء الاسم والسعر");
+
+        try {
+            await db.collection('orders').add({
+                customerName: name,
+                region: region,
+                price: price,
+                details: details,
+                urgent: urgent,
+                status: 'pending',
+                time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp() // توقيت السيرفر لضمان المزامنة
+            });
+            closeModal();
+        } catch (e) { alert("خطأ في الحفظ"); }
+    };
+
+    window.updateStatus = async (id, newStatus) => {
+        try {
+            await db.collection('orders').doc(id).update({ status: newStatus });
+        } catch (e) { alert("فشل التحديث"); }
+    };
+
+    window.deleteOrder = async (id) => {
+        if(confirm("هل تريد حذف هذا الطلب نهائياً؟")) {
+            await db.collection('orders').doc(id).delete();
         }
+    };
 
-        // حذف المشروع
-        async function deleteProject(id) {
-            if (currentUser !== 'office') {
-                alert('هذه الصلاحية للمكتب فقط');
-                return;
-            }
-            
-            if (!firebaseInitialized) return;
-            
-            if (confirm('هل أنت متأكد من الحذف؟')) {
-                try {
-                    await db.collection('projects').doc(id).delete();
-                    alert('تم حذف الطلب بنجاح');
-                } catch (error) {
-                    console.error('Error deleting project:', error);
-                    alert('حدث خطأ في الحذف');
-                }
-            }
-        }
+    // تشغيل التطبيق
+    showLogin();
+</script>
 
-        // إرسال للمعمل عبر واتساب
-        function sendToFactory(id) {
-            const project = projects.find(p => p.id === id);
-            if (!project) return;
-            
-            let factoryNumber = project.factoryNumber.replace(/\D/g, '');
-            if (factoryNumber.startsWith('0')) factoryNumber = factoryNumber.substring(1);
-            
-            const message = `*طلب جديد - ${project.customerName}*\n\n` +
-                `👤 الزبون: ${project.customerName}\n` +
-                `📞 رقم الزبون: +964${project.customerPhone}\n` +
-                `📏 القياسات: ${project.measurements || 'غير محدد'}\n` +
-                `🎨 اللون/النقشة: ${project.color || 'غير محدد'}\n` +
-                `🚪 قبضات الباب: ${project.handles || 'غير محدد'}\n` +
-                `📝 ملاحظات: ${project.notes || 'لا توجد'}`;
-
-            window.open(`https://wa.me/964${factoryNumber}?text=${encodeURIComponent(message)}`, '_blank');
-        }
-
-        // البحث
-        function searchCustomer() {
-            const term = document.getElementById('searchInput').value.trim();
-            if (!term) return;
-
-            const results = projects.filter(p => 
-                p.customerName.includes(term)
-            );
-
-            if (results.length > 0) {
-                document.getElementById('searchResults').style.display = 'block';
-                const content = document.getElementById('searchResultsContent');
-                content.innerHTML = '';
-                
-                results.forEach(project => {
-                    const card = createProjectCard(project, false);
-                    content.appendChild(card);
-                });
-            } else {
-                alert('لا توجد نتائج');
-            }
-        }
-
-        function clearSearch() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('searchResults').style.display = 'none';
-        }
-
-        // بدء التطبيق
-        checkFirebaseConfig();
-    </script>
 </body>
 </html>

@@ -2,92 +2,482 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مطابخ أحمد - نظام متعدد الهواتف</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>نظام إدارة المطابخ - للهواتف</title>
     
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui; }
-        body { background: #667eea; padding: 10px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; overflow: hidden; }
-        
-        /* شاشة الدخول */
-        .login-screen { padding: 30px; }
-        .login-header { text-align: center; margin-bottom: 30px; }
-        .login-header h1 { color: #333; }
-        .login-header .online-badge { background: #28a745; color: white; padding: 5px 15px; border-radius: 20px; display: inline-block; margin-top: 10px; }
-        
-        .login-options { display: flex; gap: 10px; margin-bottom: 20px; }
-        .login-option { flex: 1; padding: 20px; border: 2px solid #e0e0e0; border-radius: 10px; text-align: center; }
-        .login-option.active { border-color: #667eea; background: #f0f4ff; }
-        .login-option i { font-size: 30px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* ===== شاشة الدخول ===== */
+        .login-screen {
+            padding: 30px 20px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .online-badge {
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-block;
+        }
+
+        .login-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .login-option {
+            flex: 1;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .login-option.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .login-option i {
+            font-size: 30px;
+            margin-bottom: 5px;
+        }
+
         .login-option.office i { color: #667eea; }
         .login-option.factory i { color: #25d366; }
-        
-        .password-input { margin-bottom: 20px; }
-        .password-input input { width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; }
-        
-        .btn-login { width: 100%; padding: 15px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 16px; }
-        
-        /* الصفحة الرئيسية */
-        .header { background: #2b2b2b; color: white; padding: 15px; text-align: center; position: relative; }
-        .mode-badge { background: #ffd700; color: #333; padding: 3px 10px; border-radius: 15px; font-size: 12px; }
-        .logout-btn { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); background: #dc3545; color: white; border: none; padding: 5px 15px; border-radius: 20px; }
-        
-        .add-btn { background: #ffd700; color: #333; border: none; padding: 15px; width: 90%; margin: 10px auto; border-radius: 30px; font-size: 16px; display: block; }
-        
-        .notifications { background: #fff3cd; padding: 10px; margin: 10px; border-radius: 30px; display: flex; justify-content: space-between; align-items: center; }
-        .refresh-btn { background: #17a2b8; color: white; border: none; padding: 5px 15px; border-radius: 20px; }
-        
-        .tabs { display: flex; gap: 5px; padding: 10px; background: #f8f9fa; }
-        .tab { flex: 1; padding: 10px; border: none; background: white; border-radius: 5px; }
-        .tab.active { background: #667eea; color: white; }
-        
-        .search-box { padding: 10px; }
-        .search-box input { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 10px; }
-        
-        .projects { padding: 10px; display: flex; flex-direction: column; gap: 10px; }
-        
-        .project-card { background: white; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
-        .card-header { background: #667eea; color: white; padding: 10px; display: flex; justify-content: space-between; }
-        .status { padding: 3px 8px; border-radius: 15px; font-size: 12px; }
+
+        .password-input {
+            margin-bottom: 20px;
+        }
+
+        .password-input input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .error {
+            color: #dc3545;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* ===== الصفحة الرئيسية ===== */
+        .header {
+            background: #2b2b2b;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+        }
+
+        .mode-badge {
+            background: #ffd700;
+            color: #333;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .logout-btn {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* زر الإضافة */
+        .add-btn {
+            background: #ffd700;
+            color: #333;
+            border: none;
+            padding: 15px;
+            width: calc(100% - 20px);
+            margin: 10px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* شريط الإشعارات */
+        .notifications {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px 15px;
+            margin: 10px;
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-right: 4px solid #ffd700;
+        }
+
+        .refresh-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        /* تبويبات */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        /* بحث */
+        .search-box {
+            padding: 10px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        /* بطاقات المشاريع */
+        .projects {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .project-card {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status {
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
         .status.planning { background: #fff3cd; color: #856404; }
         .status.execution { background: #cce5ff; color: #004085; }
         .status.completed { background: #d4edda; color: #155724; }
-        
-        .card-body { padding: 10px; }
-        .info { margin-bottom: 5px; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
-        .info-label { color: #666; font-size: 12px; }
-        .info-value { font-weight: 500; }
-        
-        .card-footer { background: #f8f9fa; padding: 10px; display: flex; gap: 5px; }
-        .btn { flex: 1; border: none; padding: 8px; border-radius: 5px; font-size: 12px; }
+
+        .card-body {
+            padding: 10px;
+        }
+
+        .info {
+            margin-bottom: 5px;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 5px;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 11px;
+        }
+
+        .info-value {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .card-footer {
+            background: #f8f9fa;
+            padding: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn {
+            flex: 1;
+            border: none;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
         .btn-edit { background: #17a2b8; color: white; }
         .btn-whatsapp { background: #25d366; color: white; }
         .btn-delete { background: #dc3545; color: white; }
         .btn-receive { background: #ffd700; color: #333; }
         .btn-start { background: #28a745; color: white; }
-        
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); padding: 20px; }
-        .modal-content { background: white; padding: 20px; border-radius: 15px; max-width: 500px; margin: 20px auto; }
-        
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px; }
-        
-        .phone-group { display: flex; border: 2px solid #e0e0e0; border-radius: 5px; overflow: hidden; }
-        .phone-prefix { background: #f0f0f0; padding: 10px; }
-        .phone-group input { border: none; flex: 1; }
-        
-        .close { float: left; font-size: 24px; cursor: pointer; }
-        
-        .error { color: #dc3545; text-align: center; margin-top: 10px; }
-        
-        .service-worker-warning { background: #ffc107; color: #333; padding: 10px; margin: 10px; border-radius: 5px; text-align: center; }
+
+        /* ===== نافذة إضافة طلب (معدلة للهواتف) ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 20px;
+            max-width: 500px;
+            max-height: 85vh; /* تحديد أقصى ارتفاع */
+            overflow-y: auto; /* تفعيل التمرير */
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #ffd700;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .modal-header h3 {
+            color: #333;
+            font-size: 18px;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+
+        .close:hover {
+            color: #ffd700;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .phone-group {
+            display: flex;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .phone-prefix {
+            background: #f0f0f0;
+            padding: 12px;
+            font-weight: 600;
+            color: #333;
+            border-left: 2px solid #e0e0e0;
+            white-space: nowrap;
+        }
+
+        .phone-group input {
+            border: none;
+            border-radius: 0;
+            flex: 1;
+        }
+
+        .phone-group input:focus {
+            outline: none;
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+        }
+
+        .btn-save:hover {
+            background: #218838;
+        }
+
+        /* زر تحديث كبير للهواتف */
+        .big-refresh {
+            padding: 10px;
+            margin: 10px;
+        }
+
+        .big-refresh button {
+            width: 100%;
+            padding: 15px;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* تحسينات للهواتف الصغيرة */
+        @media (max-width: 380px) {
+            .modal-content {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            .form-group input,
+            .form-group select,
+            .form-group textarea,
+            .phone-prefix {
+                padding: 10px;
+                font-size: 13px;
+            }
+        }
     </style>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div id="app"></div>
@@ -183,54 +573,29 @@
             }
         };
 
-        // ==================== بدء التحديثات المباشرة ====================
+        // ==================== بدء التحديثات ====================
         function startRealtimeUpdates() {
-            console.log('🔄 بدء التحديثات المباشرة');
+            console.log('🔄 بدء التحديثات');
             
-            // 1. استماع مباشر (يعمل على الكمبيوتر فقط)
-            if (!isMobile) {
-                db.collection('projects')
-                    .orderBy('timestamp', 'desc')
-                    .onSnapshot(snapshot => {
-                        updateProjectsFromSnapshot(snapshot);
-                    }, error => {
-                        console.log('خطأ في الاستماع:', error);
-                        startPolling();
-                    });
-            } else {
-                // 2. للهواتف: استخدام Polling كل 3 ثواني
-                startPolling();
-            }
-            
-            // 3. تحديث عند عودة الصفحة
-            document.addEventListener('visibilitychange', () => {
-                if (!document.hidden && currentUser) {
-                    console.log('👁️ الصفحة ظهرت - تحديث');
-                    fetchProjects();
-                }
-            });
-            
-            // 4. تحديث عند عودة الاتصال
-            window.addEventListener('online', () => {
-                console.log('🌐 عاد الاتصال - تحديث');
-                fetchProjects();
-            });
-        }
-
-        // ==================== Polling للهواتف ====================
-        function startPolling() {
-            console.log('📱 وضع الهاتف - تحديث كل 3 ثواني');
-            
-            // تحديث فوري أول مرة
-            fetchProjects();
-            
-            // ثم كل 3 ثواني
+            // تحديث كل 3 ثواني (مناسب للهواتف)
             setInterval(() => {
                 if (currentUser) {
-                    console.log('🔄 تحديث دوري:', new Date().toLocaleTimeString());
                     fetchProjects();
                 }
             }, 3000);
+            
+            // تحديث عند رجوع الصفحة
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && currentUser) {
+                    fetchProjects();
+                }
+            });
+            
+            // تحديث عند عودة الاتصال
+            window.addEventListener('online', fetchProjects);
+            
+            // تحديث أول مرة
+            fetchProjects();
         }
 
         // ==================== جلب المشاريع ====================
@@ -241,36 +606,22 @@
                 .orderBy('timestamp', 'desc')
                 .get()
                 .then(snapshot => {
-                    updateProjectsFromSnapshot(snapshot);
-                    failedAttempts = 0;
-                })
-                .catch(error => {
-                    console.log('خطأ في الجلب:', error);
-                    failedAttempts++;
+                    const newProjects = [];
+                    snapshot.forEach(doc => {
+                        newProjects.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
                     
-                    // إذا فشل الاتصال 3 مرات، حاول مرة أخرى بعد 10 ثواني
-                    if (failedAttempts >= 3) {
-                        setTimeout(fetchProjects, 10000);
+                    projects = newProjects;
+                    displayProjects();
+                    
+                    if (currentUser === 'factory') {
+                        updateNotificationCount();
                     }
-                });
-        }
-
-        // ==================== تحديث المشاريع ====================
-        function updateProjectsFromSnapshot(snapshot) {
-            const newProjects = [];
-            snapshot.forEach(doc => {
-                newProjects.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
-            });
-            
-            projects = newProjects;
-            displayProjects();
-            
-            if (currentUser === 'factory') {
-                updateNotificationCount();
-            }
+                })
+                .catch(error => console.log('خطأ:', error));
         }
 
         // ==================== عرض الصفحة الرئيسية ====================
@@ -324,19 +675,19 @@
                     
                     ${isMobile && isFactory ? `
                         <!-- زر تحديث كبير للهواتف -->
-                        <div style="padding: 10px;">
-                            <button onclick="forceRefresh()" style="width:100%; padding:15px; background:#17a2b8; color:white; border:none; border-radius:30px;">
+                        <div class="big-refresh">
+                            <button onclick="forceRefresh()">
                                 <i class="fas fa-sync-alt"></i> تحديث الآن
                             </button>
                         </div>
                     ` : ''}
                 </div>
                 
-                <!-- مودال الإضافة/التعديل -->
+                <!-- نافذة إضافة/تعديل الطلب (معدلة للهواتف) -->
                 <div id="projectModal" class="modal">
                     <div class="modal-content">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                            <h3 id="modalTitle">إضافة طلب</h3>
+                        <div class="modal-header">
+                            <h3 id="modalTitle">➕ إضافة طلب جديد</h3>
                             <span class="close" onclick="closeModal()">&times;</span>
                         </div>
                         
@@ -344,63 +695,63 @@
                             <input type="hidden" id="editId">
                             
                             <div class="form-group">
-                                <label>اسم الزبون</label>
-                                <input type="text" id="customerName" required>
+                                <label><i class="fas fa-user"></i> اسم الزبون</label>
+                                <input type="text" id="customerName" placeholder="أدخل اسم الزبون" required>
                             </div>
                             
                             <div class="form-group">
-                                <label>رقم الزبون</label>
+                                <label><i class="fas fa-phone"></i> رقم الزبون</label>
                                 <div class="phone-group">
                                     <span class="phone-prefix">+964</span>
-                                    <input type="tel" id="customerPhone" required>
+                                    <input type="tel" id="customerPhone" placeholder="77xxxxxxxx" required>
                                 </div>
                             </div>
                             
                             <div class="form-group">
-                                <label>القياسات</label>
-                                <textarea id="measurements" rows="2"></textarea>
+                                <label><i class="fas fa-ruler"></i> القياسات</label>
+                                <textarea id="measurements" rows="2" placeholder="مثال: الطول 3م، العرض 2.5م، الارتفاع 2.2م"></textarea>
                             </div>
                             
                             <div class="form-group">
-                                <label>اللون والنقشة</label>
-                                <input type="text" id="color">
+                                <label><i class="fas fa-palette"></i> لون المطبخ والنقشة</label>
+                                <input type="text" id="color" placeholder="مثال: أبيض - نقشة خشبية">
                             </div>
                             
                             <div class="form-group">
-                                <label>قبضات الباب</label>
-                                <input type="text" id="handles">
+                                <label><i class="fas fa-door-open"></i> نوع قبضات الباب</label>
+                                <input type="text" id="handles" placeholder="مثال: ذهبية / كروم / سوداء">
                             </div>
                             
                             <div class="form-group">
-                                <label>رقم المعمل</label>
+                                <label><i class="fas fa-industry"></i> رقم المعمل (واتساب)</label>
                                 <div class="phone-group">
                                     <span class="phone-prefix">+964</span>
-                                    <input type="tel" id="factoryNumber" value="7700000000">
+                                    <input type="tel" id="factoryNumber" value="7700000000" placeholder="77xxxxxxxx">
                                 </div>
                             </div>
                             
                             <div class="form-group">
-                                <label>ملاحظات</label>
-                                <textarea id="notes" rows="2"></textarea>
+                                <label><i class="fas fa-sticky-note"></i> ملاحظات إضافية</label>
+                                <textarea id="notes" rows="2" placeholder="أي ملاحظات إضافية..."></textarea>
                             </div>
                             
                             <div class="form-group">
-                                <label>الحالة</label>
+                                <label><i class="fas fa-chart-line"></i> حالة الطلب</label>
                                 <select id="status">
-                                    <option value="في الانتظار">في الانتظار</option>
-                                    <option value="في التنفيذ">في التنفيذ</option>
-                                    <option value="مكتمل">مكتمل</option>
+                                    <option value="في الانتظار">⏳ في الانتظار</option>
+                                    <option value="في التنفيذ">⚙️ في التنفيذ</option>
+                                    <option value="مكتمل">✅ مكتمل</option>
+                                    <option value="تم التسليم">📦 تم التسليم</option>
                                 </select>
                             </div>
                             
-                            <button type="submit" class="btn-login">حفظ</button>
+                            <button type="submit" class="btn-save">
+                                <i class="fas fa-save"></i> حفظ الطلب
+                            </button>
                         </form>
                     </div>
                 </div>
             `;
-            
-            // جلب المشاريع
-            fetchProjects();
         }
 
         // ==================== عرض المشاريع ====================
@@ -411,64 +762,55 @@
             const projectsToShow = filteredProjects || projects;
             
             if (projectsToShow.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:20px;">لا توجد طلبات</div>';
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">لا توجد طلبات</div>';
                 return;
             }
             
             let html = '';
             projectsToShow.forEach(project => {
                 let statusClass = '';
-                let statusText = project.status;
-                
                 switch(project.status) {
-                    case 'في الانتظار':
-                        statusClass = 'planning';
-                        break;
-                    case 'في التنفيذ':
-                        statusClass = 'execution';
-                        break;
-                    case 'مكتمل':
-                    case 'تم التسليم':
-                        statusClass = 'completed';
-                        break;
+                    case 'في الانتظار': statusClass = 'planning'; break;
+                    case 'في التنفيذ': statusClass = 'execution'; break;
+                    case 'مكتمل': case 'تم التسليم': statusClass = 'completed'; break;
                 }
                 
                 let buttons = '';
                 if (currentUser === 'office') {
                     buttons = `
-                        <button class="btn btn-edit" onclick="openEditModal('${project.id}')">✏️ تعديل</button>
-                        <button class="btn btn-whatsapp" onclick="sendWhatsApp('${project.id}')">📱 واتساب</button>
-                        <button class="btn btn-delete" onclick="deleteProject('${project.id}')">🗑️ حذف</button>
+                        <button class="btn btn-edit" onclick="openEditModal('${project.id}')"><i class="fas fa-edit"></i> تعديل</button>
+                        <button class="btn btn-whatsapp" onclick="sendWhatsApp('${project.id}')"><i class="fab fa-whatsapp"></i> واتساب</button>
+                        <button class="btn btn-delete" onclick="deleteProject('${project.id}')"><i class="fas fa-trash"></i> حذف</button>
                     `;
                 } else {
                     if (project.status === 'في الانتظار') {
-                        buttons = `<button class="btn btn-receive" onclick="updateStatus('${project.id}', 'في التنفيذ')">📦 استلام</button>`;
+                        buttons = `<button class="btn btn-receive" onclick="updateStatus('${project.id}', 'في التنفيذ')"><i class="fas fa-hand-holding-heart"></i> استلام</button>`;
                     } else if (project.status === 'في التنفيذ') {
-                        buttons = `<button class="btn btn-start" onclick="updateStatus('${project.id}', 'مكتمل')">✅ اكتمل</button>`;
+                        buttons = `<button class="btn btn-start" onclick="updateStatus('${project.id}', 'مكتمل')"><i class="fas fa-check-circle"></i> اكتمل</button>`;
                     }
                 }
                 
                 html += `
                     <div class="project-card">
                         <div class="card-header">
-                            <span>${project.customerName}</span>
-                            <span class="status ${statusClass}">${statusText}</span>
+                            <span><i class="fas fa-user"></i> ${project.customerName}</span>
+                            <span class="status ${statusClass}">${project.status}</span>
                         </div>
                         <div class="card-body">
                             <div class="info">
-                                <div class="info-label">📞 الهاتف</div>
+                                <div class="info-label"><i class="fas fa-phone"></i> الهاتف</div>
                                 <div class="info-value">+964 ${project.customerPhone}</div>
                             </div>
                             <div class="info">
-                                <div class="info-label">📏 القياسات</div>
+                                <div class="info-label"><i class="fas fa-ruler"></i> القياسات</div>
                                 <div class="info-value">${project.measurements || '-'}</div>
                             </div>
                             <div class="info">
-                                <div class="info-label">🎨 اللون</div>
+                                <div class="info-label"><i class="fas fa-palette"></i> اللون</div>
                                 <div class="info-value">${project.color || '-'}</div>
                             </div>
                             <div class="info">
-                                <div class="info-label">🚪 القبضات</div>
+                                <div class="info-label"><i class="fas fa-door-open"></i> القبضات</div>
                                 <div class="info-value">${project.handles || '-'}</div>
                             </div>
                         </div>
@@ -488,9 +830,7 @@
             const element = document.getElementById('newOrdersCount');
             if (element) {
                 element.textContent = count;
-                
-                // إذا كان هناك طلبات جديدة، شغل صوت
-                if (count > 0 && count > (window.lastCount || 0)) {
+                if (count > (window.lastCount || 0)) {
                     playNotification();
                 }
                 window.lastCount = count;
@@ -519,19 +859,11 @@
         // ==================== تصفية الطلبات ====================
         window.filterOrders = (filter) => {
             let filtered = [];
-            
             switch(filter) {
-                case 'new':
-                    filtered = projects.filter(p => p.status === 'في الانتظار');
-                    break;
-                case 'inProgress':
-                    filtered = projects.filter(p => p.status === 'في التنفيذ');
-                    break;
-                case 'completed':
-                    filtered = projects.filter(p => ['مكتمل', 'تم التسليم'].includes(p.status));
-                    break;
+                case 'new': filtered = projects.filter(p => p.status === 'في الانتظار'); break;
+                case 'inProgress': filtered = projects.filter(p => p.status === 'في التنفيذ'); break;
+                case 'completed': filtered = projects.filter(p => ['مكتمل', 'تم التسليم'].includes(p.status)); break;
             }
-            
             displayProjects(filtered);
             
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
@@ -545,10 +877,7 @@
                 displayProjects();
                 return;
             }
-            
-            const filtered = projects.filter(p => 
-                p.customerName.toLowerCase().includes(term)
-            );
+            const filtered = projects.filter(p => p.customerName.toLowerCase().includes(term));
             displayProjects(filtered);
         };
 
@@ -559,10 +888,15 @@
                 return;
             }
             
-            document.getElementById('modalTitle').innerHTML = 'إضافة طلب';
+            document.getElementById('modalTitle').innerHTML = '➕ إضافة طلب جديد';
             document.getElementById('projectForm').reset();
             document.getElementById('editId').value = '';
             document.getElementById('projectModal').style.display = 'block';
+            
+            // تمرير لأعلى النافذة
+            setTimeout(() => {
+                document.querySelector('.modal-content').scrollTop = 0;
+            }, 100);
         };
 
         // ==================== فتح مودال التعديل ====================
@@ -570,7 +904,7 @@
             const project = projects.find(p => p.id === id);
             if (!project) return;
             
-            document.getElementById('modalTitle').innerHTML = 'تعديل الطلب';
+            document.getElementById('modalTitle').innerHTML = '✏️ تعديل الطلب';
             document.getElementById('editId').value = id;
             document.getElementById('customerName').value = project.customerName;
             document.getElementById('customerPhone').value = project.customerPhone;
@@ -582,6 +916,11 @@
             document.getElementById('status').value = project.status;
             
             document.getElementById('projectModal').style.display = 'block';
+            
+            // تمرير لأعلى النافذة
+            setTimeout(() => {
+                document.querySelector('.modal-content').scrollTop = 0;
+            }, 100);
         };
 
         // ==================== إغلاق المودال ====================
@@ -610,17 +949,10 @@
             try {
                 if (editId) {
                     await db.collection('projects').doc(editId).update(projectData);
-                    alert('✅ تم التعديل');
+                    alert('✅ تم التعديل بنجاح');
                 } else {
                     await db.collection('projects').add(projectData);
-                    alert('✅ تمت الإضافة');
-                    
-                    // بعد الإضافة، أرسل إشعار للمعمل
-                    if (confirm('هل تريد إرسال إشعار للمعمل؟')) {
-                        const factoryNumber = projectData.factoryNumber;
-                        const message = `طلب جديد: ${projectData.customerName}`;
-                        window.open(`https://wa.me/964${factoryNumber}?text=${encodeURIComponent(message)}`, '_blank');
-                    }
+                    alert('✅ تمت الإضافة بنجاح');
                 }
                 
                 closeModal();
@@ -628,7 +960,7 @@
                 
             } catch (error) {
                 console.error('Error:', error);
-                alert('❌ حدث خطأ');
+                alert('❌ حدث خطأ في الحفظ');
             }
         };
 
@@ -639,10 +971,8 @@
                     status: newStatus,
                     timestamp: Date.now()
                 });
-                
-                alert('✅ تم التحديث');
+                alert(`✅ تم التحديث إلى: ${newStatus}`);
                 fetchProjects();
-                
             } catch (error) {
                 console.error('Error:', error);
                 alert('❌ حدث خطأ');
@@ -656,16 +986,15 @@
                 return;
             }
             
-            if (!confirm('تأكيد الحذف؟')) return;
+            if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return;
             
             try {
                 await db.collection('projects').doc(id).delete();
-                alert('✅ تم الحذف');
+                alert('✅ تم الحذف بنجاح');
                 fetchProjects();
-                
             } catch (error) {
                 console.error('Error:', error);
-                alert('❌ حدث خطأ');
+                alert('❌ حدث خطأ في الحذف');
             }
         };
 
@@ -674,7 +1003,7 @@
             const project = projects.find(p => p.id === id);
             if (!project) return;
             
-            const message = `طلب مطبخ:\n👤 ${project.customerName}\n📞 +964${project.customerPhone}\n📏 ${project.measurements || '-'}\n🎨 ${project.color || '-'}`;
+            const message = `طلب مطبخ:\n👤 الزبون: ${project.customerName}\n📞 الهاتف: +964${project.customerPhone}\n📏 القياسات: ${project.measurements || '-'}\n🎨 اللون: ${project.color || '-'}\n🚪 القبضات: ${project.handles || '-'}`;
             
             window.open(`https://wa.me/964${project.factoryNumber}?text=${encodeURIComponent(message)}`, '_blank');
         };
@@ -688,15 +1017,12 @@
         // ==================== بدء التطبيق ====================
         showLoginScreen();
 
-        // تحذير إذا كان الملف يفتح محلياً
+        // تحذير إذا كان الملف محلياً
         if (window.location.protocol === 'file:') {
             setTimeout(() => {
-                alert('⚠️ أنت تفتح الملف محلياً.\nلعمل النظام بشكل صحيح بين هاتفين، استضف الملف على GitHub Pages أو Netlify');
+                alert('⚠️ أنت تفتح الملف محلياً.\nلعمل النظام بشكل صحيح بين هاتفين، استضف الملف على Netlify أو GitHub Pages');
             }, 1000);
         }
     </script>
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </body>
 </html>

@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مطابخ أحمد - نظام متعدد الهواتف</title>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui; }
+        body { background: #667eea; padding: 10px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; overflow: hidden; }
+        
+        /* شاشة الدخول */
+        .login-screen { padding: 30px; }
+        .login-header { text-align: center; margin-bottom: 30px; }
+        .login-header h1 { color: #333; }
+        .login-header .online-badge { background: #28a745; color: white; padding: 5px 15px; border-radius: 20px; display: inline-block; margin-top: 10px; }
+        
+        .login-options { display: flex; gap: 10px; margin-bottom: 20px; }
+        .login-option { flex: 1; padding: 20px; border: 2px solid #e0e0e0; border-radius: 10px; text-align: center; }
+        .login-option.active { border-color: #667eea; background: #f0f4ff; }
+        .login-option i { font-size: 30px; }
+        .login-option.office i { color: #667eea; }
+        .login-option.factory i { color: #25d366; }
+        
+        .password-input { margin-bottom: 20px; }
+        .password-input input { width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; }
+        
+        .btn-login { width: 100%; padding: 15px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 16px; }
+        
+        /* الصفحة الرئيسية */
+        .header { background: #2b2b2b; color: white; padding: 15px; text-align: center; position: relative; }
+        .mode-badge { background: #ffd700; color: #333; padding: 3px 10px; border-radius: 15px; font-size: 12px; }
+        .logout-btn { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); background: #dc3545; color: white; border: none; padding: 5px 15px; border-radius: 20px; }
+        
+        .add-btn { background: #ffd700; color: #333; border: none; padding: 15px; width: 90%; margin: 10px auto; border-radius: 30px; font-size: 16px; display: block; }
+        
+        .notifications { background: #fff3cd; padding: 10px; margin: 10px; border-radius: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .refresh-btn { background: #17a2b8; color: white; border: none; padding: 5px 15px; border-radius: 20px; }
+        
+        .tabs { display: flex; gap: 5px; padding: 10px; background: #f8f9fa; }
+        .tab { flex: 1; padding: 10px; border: none; background: white; border-radius: 5px; }
+        .tab.active { background: #667eea; color: white; }
+        
+        .search-box { padding: 10px; }
+        .search-box input { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 10px; }
+        
+        .projects { padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+        
+        .project-card { background: white; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
+        .card-header { background: #667eea; color: white; padding: 10px; display: flex; justify-content: space-between; }
+        .status { padding: 3px 8px; border-radius: 15px; font-size: 12px; }
+        .status.planning { background: #fff3cd; color: #856404; }
+        .status.execution { background: #cce5ff; color: #004085; }
+        .status.completed { background: #d4edda; color: #155724; }
+        
+        .card-body { padding: 10px; }
+        .info { margin-bottom: 5px; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
+        .info-label { color: #666; font-size: 12px; }
+        .info-value { font-weight: 500; }
+        
+        .card-footer { background: #f8f9fa; padding: 10px; display: flex; gap: 5px; }
+        .btn { flex: 1; border: none; padding: 8px; border-radius: 5px; font-size: 12px; }
+        .btn-edit { background: #17a2b8; color: white; }
+        .btn-whatsapp { background: #25d366; color: white; }
+        .btn-delete { background: #dc3545; color: white; }
+        .btn-receive { background: #ffd700; color: #333; }
+        .btn-start { background: #28a745; color: white; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); padding: 20px; }
+        .modal-content { background: white; padding: 20px; border-radius: 15px; max-width: 500px; margin: 20px auto; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px; }
+        
+        .phone-group { display: flex; border: 2px solid #e0e0e0; border-radius: 5px; overflow: hidden; }
+        .phone-prefix { background: #f0f0f0; padding: 10px; }
+        .phone-group input { border: none; flex: 1; }
+        
+        .close { float: left; font-size: 24px; cursor: pointer; }
+        
+        .error { color: #dc3545; text-align: center; margin-top: 10px; }
+        
+        .service-worker-warning { background: #ffc107; color: #333; padding: 10px; margin: 10px; border-radius: 5px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script>
+        // ==================== إعدادات Firebase ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZfnlCBqBuxao3OTIZAK3E4-J2bAiQWHY",
+            authDomain: "ahmad992.firebaseapp.com",
+            projectId: "ahmad992",
+            storageBucket: "ahmad992.firebasestorage.app",
+            messagingSenderId: "349563855282",
+            appId: "1:349563855282:web:87479b610f66afd31504ab"
+        };
+
+        // تهيئة Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        // متغيرات عامة
+        let currentUser = null;
+        let projects = [];
+        let lastUpdate = Date.now();
+        let failedAttempts = 0;
+
+        // كلمات المرور
+        const PASSWORDS = {
+            office: '1234',
+            factory: '5678'
+        };
+
+        // ==================== كشف نوع الجهاز ====================
+        const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isOnline = navigator.onLine;
+
+        // ==================== عرض شاشة الدخول ====================
+        function showLoginScreen() {
+            document.getElementById('app').innerHTML = `
+                <div class="container">
+                    <div class="login-screen">
+                        <div class="login-header">
+                            <h1>🍳 مطابخ أحمد</h1>
+                            <div class="online-badge">
+                                ${isOnline ? '✅ متصل' : '❌ غير متصل'}
+                            </div>
+                        </div>
+                        
+                        <div class="login-options">
+                            <div class="login-option office active" onclick="selectType('office')">
+                                <i class="fas fa-briefcase"></i>
+                                <div>المكتب</div>
+                            </div>
+                            <div class="login-option factory" onclick="selectType('factory')">
+                                <i class="fas fa-industry"></i>
+                                <div>المعمل</div>
+                            </div>
+                        </div>
+                        
+                        <div class="password-input">
+                            <input type="password" id="password" placeholder="كلمة المرور">
+                        </div>
+                        
+                        <button class="btn-login" onclick="login()">
+                            دخول
+                        </button>
+                        
+                        <div id="loginError" class="error"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==================== اختيار نوع المستخدم ====================
+        window.selectType = (type) => {
+            document.querySelectorAll('.login-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            document.querySelector(`.login-option.${type}`).classList.add('active');
+        };
+
+        // ==================== تسجيل الدخول ====================
+        window.login = () => {
+            const selected = document.querySelector('.login-option.active');
+            const type = selected.classList.contains('office') ? 'office' : 'factory';
+            const password = document.getElementById('password').value;
+            
+            if (password === PASSWORDS[type]) {
+                currentUser = type;
+                showMainScreen();
+                startRealtimeUpdates();
+            } else {
+                document.getElementById('loginError').innerHTML = '❌ كلمة مرور خاطئة';
+            }
+        };
+
+        // ==================== بدء التحديثات المباشرة ====================
+        function startRealtimeUpdates() {
+            console.log('🔄 بدء التحديثات المباشرة');
+            
+            // 1. استماع مباشر (يعمل على الكمبيوتر فقط)
+            if (!isMobile) {
+                db.collection('projects')
+                    .orderBy('timestamp', 'desc')
+                    .onSnapshot(snapshot => {
+                        updateProjectsFromSnapshot(snapshot);
+                    }, error => {
+                        console.log('خطأ في الاستماع:', error);
+                        startPolling();
+                    });
+            } else {
+                // 2. للهواتف: استخدام Polling كل 3 ثواني
+                startPolling();
+            }
+            
+            // 3. تحديث عند عودة الصفحة
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && currentUser) {
+                    console.log('👁️ الصفحة ظهرت - تحديث');
+                    fetchProjects();
+                }
+            });
+            
+            // 4. تحديث عند عودة الاتصال
+            window.addEventListener('online', () => {
+                console.log('🌐 عاد الاتصال - تحديث');
+                fetchProjects();
+            });
+        }
+
+        // ==================== Polling للهواتف ====================
+        function startPolling() {
+            console.log('📱 وضع الهاتف - تحديث كل 3 ثواني');
+            
+            // تحديث فوري أول مرة
+            fetchProjects();
+            
+            // ثم كل 3 ثواني
+            setInterval(() => {
+                if (currentUser) {
+                    console.log('🔄 تحديث دوري:', new Date().toLocaleTimeString());
+                    fetchProjects();
+                }
+            }, 3000);
+        }
+
+        // ==================== جلب المشاريع ====================
+        function fetchProjects() {
+            if (!currentUser) return;
+            
+            db.collection('projects')
+                .orderBy('timestamp', 'desc')
+                .get()
+                .then(snapshot => {
+                    updateProjectsFromSnapshot(snapshot);
+                    failedAttempts = 0;
+                })
+                .catch(error => {
+                    console.log('خطأ في الجلب:', error);
+                    failedAttempts++;
+                    
+                    // إذا فشل الاتصال 3 مرات، حاول مرة أخرى بعد 10 ثواني
+                    if (failedAttempts >= 3) {
+                        setTimeout(fetchProjects, 10000);
+                    }
+                });
+        }
+
+        // ==================== تحديث المشاريع ====================
+        function updateProjectsFromSnapshot(snapshot) {
+            const newProjects = [];
+            snapshot.forEach(doc => {
+                newProjects.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+            
+            projects = newProjects;
+            displayProjects();
+            
+            if (currentUser === 'factory') {
+                updateNotificationCount();
+            }
+        }
+
+        // ==================== عرض الصفحة الرئيسية ====================
+        function showMainScreen() {
+            const isFactory = currentUser === 'factory';
+            
+            document.getElementById('app').innerHTML = `
+                <div class="container">
+                    <!-- رأس الصفحة -->
+                    <div class="header">
+                        <div style="display: flex; align-items: center; gap: 5px; justify-content: center;">
+                            <i class="fas ${isFactory ? 'fa-industry' : 'fa-briefcase'}"></i>
+                            <span>${isFactory ? 'المعمل' : 'المكتب'}</span>
+                            <span class="mode-badge">${isMobile ? '📱' : '💻'}</span>
+                        </div>
+                        <button class="logout-btn" onclick="logout()">خروج</button>
+                    </div>
+                    
+                    ${isFactory ? `
+                        <!-- إشعارات المعمل -->
+                        <div class="notifications">
+                            <div>
+                                <i class="fas fa-bell"></i>
+                                <span>لديك <span id="newOrdersCount">0</span> طلبات جديدة</span>
+                            </div>
+                            <button class="refresh-btn" onclick="forceRefresh()">
+                                <i class="fas fa-sync-alt"></i> تحديث
+                            </button>
+                        </div>
+                        
+                        <!-- تبويبات -->
+                        <div class="tabs">
+                            <button class="tab active" onclick="filterOrders('new')">جديدة</button>
+                            <button class="tab" onclick="filterOrders('inProgress')">قيد التنفيذ</button>
+                            <button class="tab" onclick="filterOrders('completed')">منتهية</button>
+                        </div>
+                    ` : `
+                        <!-- زر إضافة للمكتب -->
+                        <button class="add-btn" onclick="openAddModal()">
+                            <i class="fas fa-plus-circle"></i> إضافة طلب جديد
+                        </button>
+                    `}
+                    
+                    <!-- بحث -->
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="🔍 بحث عن زبون..." onkeyup="searchProjects()">
+                    </div>
+                    
+                    <!-- قائمة المشاريع -->
+                    <div id="projectsList" class="projects"></div>
+                    
+                    ${isMobile && isFactory ? `
+                        <!-- زر تحديث كبير للهواتف -->
+                        <div style="padding: 10px;">
+                            <button onclick="forceRefresh()" style="width:100%; padding:15px; background:#17a2b8; color:white; border:none; border-radius:30px;">
+                                <i class="fas fa-sync-alt"></i> تحديث الآن
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <!-- مودال الإضافة/التعديل -->
+                <div id="projectModal" class="modal">
+                    <div class="modal-content">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                            <h3 id="modalTitle">إضافة طلب</h3>
+                            <span class="close" onclick="closeModal()">&times;</span>
+                        </div>
+                        
+                        <form id="projectForm" onsubmit="saveProject(event)">
+                            <input type="hidden" id="editId">
+                            
+                            <div class="form-group">
+                                <label>اسم الزبون</label>
+                                <input type="text" id="customerName" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>رقم الزبون</label>
+                                <div class="phone-group">
+                                    <span class="phone-prefix">+964</span>
+                                    <input type="tel" id="customerPhone" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>القياسات</label>
+                                <textarea id="measurements" rows="2"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>اللون والنقشة</label>
+                                <input type="text" id="color">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>قبضات الباب</label>
+                                <input type="text" id="handles">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>رقم المعمل</label>
+                                <div class="phone-group">
+                                    <span class="phone-prefix">+964</span>
+                                    <input type="tel" id="factoryNumber" value="7700000000">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>ملاحظات</label>
+                                <textarea id="notes" rows="2"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>الحالة</label>
+                                <select id="status">
+                                    <option value="في الانتظار">في الانتظار</option>
+                                    <option value="في التنفيذ">في التنفيذ</option>
+                                    <option value="مكتمل">مكتمل</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn-login">حفظ</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+            
+            // جلب المشاريع
+            fetchProjects();
+        }
+
+        // ==================== عرض المشاريع ====================
+        function displayProjects(filteredProjects = null) {
+            const container = document.getElementById('projectsList');
+            if (!container) return;
+            
+            const projectsToShow = filteredProjects || projects;
+            
+            if (projectsToShow.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px;">لا توجد طلبات</div>';
+                return;
+            }
+            
+            let html = '';
+            projectsToShow.forEach(project => {
+                let statusClass = '';
+                let statusText = project.status;
+                
+                switch(project.status) {
+                    case 'في الانتظار':
+                        statusClass = 'planning';
+                        break;
+                    case 'في التنفيذ':
+                        statusClass = 'execution';
+                        break;
+                    case 'مكتمل':
+                    case 'تم التسليم':
+                        statusClass = 'completed';
+                        break;
+                }
+                
+                let buttons = '';
+                if (currentUser === 'office') {
+                    buttons = `
+                        <button class="btn btn-edit" onclick="openEditModal('${project.id}')">✏️ تعديل</button>
+                        <button class="btn btn-whatsapp" onclick="sendWhatsApp('${project.id}')">📱 واتساب</button>
+                        <button class="btn btn-delete" onclick="deleteProject('${project.id}')">🗑️ حذف</button>
+                    `;
+                } else {
+                    if (project.status === 'في الانتظار') {
+                        buttons = `<button class="btn btn-receive" onclick="updateStatus('${project.id}', 'في التنفيذ')">📦 استلام</button>`;
+                    } else if (project.status === 'في التنفيذ') {
+                        buttons = `<button class="btn btn-start" onclick="updateStatus('${project.id}', 'مكتمل')">✅ اكتمل</button>`;
+                    }
+                }
+                
+                html += `
+                    <div class="project-card">
+                        <div class="card-header">
+                            <span>${project.customerName}</span>
+                            <span class="status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="info">
+                                <div class="info-label">📞 الهاتف</div>
+                                <div class="info-value">+964 ${project.customerPhone}</div>
+                            </div>
+                            <div class="info">
+                                <div class="info-label">📏 القياسات</div>
+                                <div class="info-value">${project.measurements || '-'}</div>
+                            </div>
+                            <div class="info">
+                                <div class="info-label">🎨 اللون</div>
+                                <div class="info-value">${project.color || '-'}</div>
+                            </div>
+                            <div class="info">
+                                <div class="info-label">🚪 القبضات</div>
+                                <div class="info-value">${project.handles || '-'}</div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            ${buttons}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // ==================== تحديث عداد الطلبات ====================
+        function updateNotificationCount() {
+            const count = projects.filter(p => p.status === 'في الانتظار').length;
+            const element = document.getElementById('newOrdersCount');
+            if (element) {
+                element.textContent = count;
+                
+                // إذا كان هناك طلبات جديدة، شغل صوت
+                if (count > 0 && count > (window.lastCount || 0)) {
+                    playNotification();
+                }
+                window.lastCount = count;
+            }
+        }
+
+        // ==================== صوت تنبيه ====================
+        function playNotification() {
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVoAAACAgICAf39/f39/f3+AgICAf39/f3+AgICAf39/f3+AgICAf39/f3+AgICAf39/f3+AgICAf39/f3+AgICAf39/fw==');
+                audio.play();
+            } catch (e) {}
+        }
+
+        // ==================== تحديث قسري ====================
+        window.forceRefresh = () => {
+            fetchProjects();
+            const btn = event?.target;
+            if (btn) {
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري...';
+                setTimeout(() => btn.innerHTML = original, 1000);
+            }
+        };
+
+        // ==================== تصفية الطلبات ====================
+        window.filterOrders = (filter) => {
+            let filtered = [];
+            
+            switch(filter) {
+                case 'new':
+                    filtered = projects.filter(p => p.status === 'في الانتظار');
+                    break;
+                case 'inProgress':
+                    filtered = projects.filter(p => p.status === 'في التنفيذ');
+                    break;
+                case 'completed':
+                    filtered = projects.filter(p => ['مكتمل', 'تم التسليم'].includes(p.status));
+                    break;
+            }
+            
+            displayProjects(filtered);
+            
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+        };
+
+        // ==================== بحث ====================
+        window.searchProjects = () => {
+            const term = document.getElementById('searchInput')?.value.toLowerCase();
+            if (!term) {
+                displayProjects();
+                return;
+            }
+            
+            const filtered = projects.filter(p => 
+                p.customerName.toLowerCase().includes(term)
+            );
+            displayProjects(filtered);
+        };
+
+        // ==================== فتح مودال الإضافة ====================
+        window.openAddModal = () => {
+            if (currentUser !== 'office') {
+                alert('هذه الصلاحية للمكتب فقط');
+                return;
+            }
+            
+            document.getElementById('modalTitle').innerHTML = 'إضافة طلب';
+            document.getElementById('projectForm').reset();
+            document.getElementById('editId').value = '';
+            document.getElementById('projectModal').style.display = 'block';
+        };
+
+        // ==================== فتح مودال التعديل ====================
+        window.openEditModal = (id) => {
+            const project = projects.find(p => p.id === id);
+            if (!project) return;
+            
+            document.getElementById('modalTitle').innerHTML = 'تعديل الطلب';
+            document.getElementById('editId').value = id;
+            document.getElementById('customerName').value = project.customerName;
+            document.getElementById('customerPhone').value = project.customerPhone;
+            document.getElementById('measurements').value = project.measurements || '';
+            document.getElementById('color').value = project.color || '';
+            document.getElementById('handles').value = project.handles || '';
+            document.getElementById('factoryNumber').value = project.factoryNumber;
+            document.getElementById('notes').value = project.notes || '';
+            document.getElementById('status').value = project.status;
+            
+            document.getElementById('projectModal').style.display = 'block';
+        };
+
+        // ==================== إغلاق المودال ====================
+        window.closeModal = () => {
+            document.getElementById('projectModal').style.display = 'none';
+        };
+
+        // ==================== حفظ المشروع ====================
+        window.saveProject = async (e) => {
+            e.preventDefault();
+            
+            const editId = document.getElementById('editId').value;
+            
+            const projectData = {
+                customerName: document.getElementById('customerName').value,
+                customerPhone: document.getElementById('customerPhone').value.replace(/\D/g, ''),
+                measurements: document.getElementById('measurements').value,
+                color: document.getElementById('color').value,
+                handles: document.getElementById('handles').value,
+                factoryNumber: document.getElementById('factoryNumber').value.replace(/\D/g, ''),
+                notes: document.getElementById('notes').value,
+                status: document.getElementById('status').value,
+                timestamp: Date.now()
+            };
+            
+            try {
+                if (editId) {
+                    await db.collection('projects').doc(editId).update(projectData);
+                    alert('✅ تم التعديل');
+                } else {
+                    await db.collection('projects').add(projectData);
+                    alert('✅ تمت الإضافة');
+                    
+                    // بعد الإضافة، أرسل إشعار للمعمل
+                    if (confirm('هل تريد إرسال إشعار للمعمل؟')) {
+                        const factoryNumber = projectData.factoryNumber;
+                        const message = `طلب جديد: ${projectData.customerName}`;
+                        window.open(`https://wa.me/964${factoryNumber}?text=${encodeURIComponent(message)}`, '_blank');
+                    }
+                }
+                
+                closeModal();
+                fetchProjects();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ حدث خطأ');
+            }
+        };
+
+        // ==================== تحديث الحالة ====================
+        window.updateStatus = async (id, newStatus) => {
+            try {
+                await db.collection('projects').doc(id).update({
+                    status: newStatus,
+                    timestamp: Date.now()
+                });
+                
+                alert('✅ تم التحديث');
+                fetchProjects();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ حدث خطأ');
+            }
+        };
+
+        // ==================== حذف المشروع ====================
+        window.deleteProject = async (id) => {
+            if (currentUser !== 'office') {
+                alert('هذه الصلاحية للمكتب فقط');
+                return;
+            }
+            
+            if (!confirm('تأكيد الحذف؟')) return;
+            
+            try {
+                await db.collection('projects').doc(id).delete();
+                alert('✅ تم الحذف');
+                fetchProjects();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ حدث خطأ');
+            }
+        };
+
+        // ==================== إرسال واتساب ====================
+        window.sendWhatsApp = (id) => {
+            const project = projects.find(p => p.id === id);
+            if (!project) return;
+            
+            const message = `طلب مطبخ:\n👤 ${project.customerName}\n📞 +964${project.customerPhone}\n📏 ${project.measurements || '-'}\n🎨 ${project.color || '-'}`;
+            
+            window.open(`https://wa.me/964${project.factoryNumber}?text=${encodeURIComponent(message)}`, '_blank');
+        };
+
+        // ==================== تسجيل الخروج ====================
+        window.logout = () => {
+            currentUser = null;
+            showLoginScreen();
+        };
+
+        // ==================== بدء التطبيق ====================
+        showLoginScreen();
+
+        // تحذير إذا كان الملف يفتح محلياً
+        if (window.location.protocol === 'file:') {
+            setTimeout(() => {
+                alert('⚠️ أنت تفتح الملف محلياً.\nلعمل النظام بشكل صحيح بين هاتفين، استضف الملف على GitHub Pages أو Netlify');
+            }, 1000);
+        }
+    </script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</body>
+</html>
